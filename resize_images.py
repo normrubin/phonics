@@ -33,8 +33,14 @@ def resize_image(input_path, output_path, size=(1024, 1024)):
             # Resize the image using high-quality resampling
             resized_img = img.resize(size, Image.Resampling.LANCZOS)
             
-            # Save the resized image
-            resized_img.save(output_path, quality=95)
+            # Save the resized image with appropriate options
+            # quality parameter only applies to JPEG/WebP formats
+            save_kwargs = {}
+            output_format = output_path.suffix.lower()
+            if output_format in ['.jpg', '.jpeg', '.webp']:
+                save_kwargs['quality'] = 95
+            
+            resized_img.save(output_path, **save_kwargs)
             print(f"Resized: {input_path} -> {output_path}")
             return True
     except Exception as e:
