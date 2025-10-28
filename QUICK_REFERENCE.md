@@ -225,7 +225,15 @@ for concept, words in concepts:
 
 ### Generate Series
 ```python
+import json
 from pathlib import Path
+
+# Define concepts
+concepts = [
+    ("short a", ["cat", "hat", "mat"]),
+    ("short e", ["bed", "red", "fed"]),
+    ("short i", ["big", "dig", "pig"]),
+]
 
 output_dir = Path("generated_books/series")
 output_dir.mkdir(parents=True, exist_ok=True)
