@@ -206,7 +206,7 @@ def prompt_for_trigger_word():
     """
     print("\n" + "=" * 60)
     print("Enter a unique identifier for your child.")
-    print("Format: childname_trigger (e.g., 'alice_girl' or 'bobby_trigger')")
+    print("Format: childname_trigger (e.g., 'alicegirl' or 'bobbytrigger')")
     print("Use letters, numbers, and underscores only.")
     print("This will be added to all image captions during training.")
     print("=" * 60)
