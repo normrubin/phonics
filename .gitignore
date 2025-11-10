@@ -1,0 +1,97 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables (contains API tokens)
+ENV
+SECRET.txt
+
+
+# ===================================================================
+# IMPORTANT: Privacy Protection - Images and Personal Data
+# ===================================================================
+# All image files are excluded to protect privacy
+# Caption files (.txt) are excluded as they contain personal information
+
+# Project-specific - Image files and directories
+photos/
+output/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.JPG
+*.JPEG
+*.PNG
+*.GIF
+*.BMP
+*.TIFF
+*.WEBP
+
+# Caption files (contain personal information)
+*.txt
+
+# Keep directory structure but ignore contents
+!photos/.gitkeep
+!output/.gitkeep
+!README.md
+!requirements.txt
+!*.txt.example
+!RUNPOD_GUIDE.md
+
+# ===================================================================
+
+# Model files
+*.safetensors
+*.ckpt
+*.pth
+*.bin
+
+# Training configs (may contain personal paths)
+flux_training_config.yaml
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

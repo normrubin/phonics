@@ -1,0 +1,32 @@
+# RunPod Environment Configuration
+# These paths are optimized for RunPod instances
+
+# Project paths
+export PROJECT_DIR="/workspace/phonics"
+export AI_TOOLKIT_DIR="/workspace/ai-toolkit"
+
+# Python environment
+export PYTHONPATH="${PROJECT_DIR}:${AI_TOOLKIT_DIR}:${PYTHONPATH}"
+
+# CUDA settings (optional, adjust for your GPU)
+export CUDA_VISIBLE_DEVICES=0
+
+# HuggingFace cache (uses RunPod's fast storage)
+export HF_HOME="/workspace/.cache/huggingface"
+export TRANSFORMERS_CACHE="/workspace/.cache/transformers"
+
+# Aliases for convenience
+alias activate_phonics='cd $PROJECT_DIR && source venv/bin/activate'
+alias activate_toolkit='cd $AI_TOOLKIT_DIR && source venv/bin/activate'
+alias check_gpu='nvidia-smi'
+alias label='python label_images.py'
+alias train='python finetune_flux_train.py'
+alias generate='python flux_infer.py'
+
+echo "RunPod environment loaded!"
+echo "Quick commands:"
+echo "  activate_phonics - Go to project and activate venv"
+echo "  check_gpu - Check GPU status"
+echo "  label - Run image labeling"
+echo "  train - Run model training"
+echo "  generate - Generate images (usage: generate prompts.txt)"

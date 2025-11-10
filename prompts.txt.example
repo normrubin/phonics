@@ -1,0 +1,15 @@
+# Example Prompts for FLUX.1-schnell Image Generation
+# One prompt per line. Lines starting with # are ignored.
+
+# Replace "[trigger]" with your actual trigger word from config.json
+
+[trigger] reading a book in a cozy library
+[trigger] playing with colorful alphabet blocks
+[trigger] holding the letter A on a bright sunny day
+[trigger] pointing at the letter B on a chalkboard
+[trigger] with a big smile holding a phonics book
+[trigger] sitting at a desk writing letters
+[trigger] in a classroom learning the alphabet
+[trigger] playing in a park with letter-shaped toys
+[trigger] wearing a backpack ready for school
+[trigger] celebrating with confetti and balloons

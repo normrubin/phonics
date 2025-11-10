@@ -1,0 +1,16 @@
+{
+  "directories": {
+    "photo_images": "/workspace/phonics/photos",
+    "output": "/workspace/phonics/output"
+  },
+  "image_settings": {
+    "target_size": 1024,
+    "format": "JPEG",
+    "quality": 95
+  },
+  "model_settings": {
+    "base_model": "flux.1-schnell",
+    "training_method": "LoRA",
+    "trigger_word": "your_trigger_word_here"
+  }
+}
