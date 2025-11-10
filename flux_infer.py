@@ -220,7 +220,7 @@ Examples:
     # Determine LoRA path
     lora_path = args.lora
     if lora_path is None and config:
-        default_lora = config.output_dir / "flux_lora"
+        default_lora = config.output_dir
         if default_lora.exists():
             lora_files = list(default_lora.glob("*.safetensors"))
             if lora_files:
