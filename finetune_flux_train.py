@@ -184,6 +184,13 @@ def main():
         default="flux_training_config.yaml",
         help="Output path for generated config",
     )
+
+    parser.add_argument(
+        "--steps",
+        type=int,
+        default=800,
+        help="Number of training steps to include in config (default: 800)",
+    )
     args = parser.parse_args()
 
     load_dotenv("ENV")
@@ -212,12 +219,7 @@ def main():
         else config.trigger_word
     )
 
-    parser.add_argument(
-        "--steps",
-        type=int,
-        default=800,
-        help="Number of training steps to include in config (default: 800)",
-    )
+
 
     if args.generate_config_only:
         create_flux_config(
