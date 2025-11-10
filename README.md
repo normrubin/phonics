@@ -350,6 +350,28 @@ Key scripts (train/infer split):
 - Training + config generation: `finetune_flux_train.py`
 - Inference (image generation): `flux_infer.py` (merged implementation; `generate_images.py` deprecated shim)
 
+## Project Structure
+
+```
+phonics/
+├── photos/                      # Training images (1024×1024 JPEG)
+│   ├── image_001.jpg
+│   ├── image_001.txt           # Auto-generated captions
+│   └── ...
+├── output/                      # All generated outputs
+│   ├── flux_lora/              # Model-specific directory
+│   │   ├── flux_training_config.yaml   # Training configuration
+│   │   ├── *.safetensors      # LoRA weight checkpoints
+│   │   └── samples/            # Sample images during training
+│   └── generated_images/       # Final inference outputs
+├── config.json                  # Project configuration
+├── ENV                          # Environment variables (HF_TOKEN)
+├── finetune_flux_train.py      # Training script
+├── flux_infer.py               # Inference script
+├── label_images.py             # Caption generation tool
+└── setup_runpod.py             # RunPod setup automation
+```
+
 ## Project Components
 
 This project consists of four main steps:

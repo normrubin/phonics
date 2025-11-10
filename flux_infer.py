@@ -220,15 +220,19 @@ Examples:
     # Determine LoRA path
     lora_path = args.lora
     if lora_path is None and config:
-        default_lora = config.output_dir
+        # New structure: output_dir/flux_lora/
+        default_lora = config.output_dir / "flux_lora"
         if default_lora.exists():
             lora_files = list(default_lora.glob("*.safetensors"))
             if lora_files:
                 lora_path = str(default_lora)
-                print(f"Using LoRA from config output: {lora_path}")
+                print(f"Using LoRA from: {lora_path}")
             else:
                 print(f"Warning: No LoRA files found in {default_lora}")
                 print("Generating with base model only")
+        else:
+            print(f"Warning: LoRA directory not found: {default_lora}")
+            print("Generating with base model only")
 
     # Determine output directory
     output_dir = args.output
