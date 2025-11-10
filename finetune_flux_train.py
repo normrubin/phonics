@@ -212,7 +212,7 @@ def main():
         sys.exit(1)
 
     dataset_dir = config.photo_images_dir
-    output_dir = config.output_dir / "flux_lora"
+    output_dir = config.output_dir
     trigger_word = (
         args.trigger_word
         if args.trigger_word is not None
