@@ -127,6 +127,11 @@ class Config:
         """Get the trigger word for model training"""
         return self.get_str("model_settings.trigger_word", "")
 
+    @property
+    def flux_training_config_path(self) -> Path:
+        """Get the path to the FLUX training config YAML file"""
+        return self.output_dir / "flux_lora" / "flux_training_config.yaml"
+
     def ensure_directories(self):
         """Create all configured directories if they don't exist"""
         self.photo_images_dir.mkdir(parents=True, exist_ok=True)
