@@ -297,6 +297,71 @@ python3 flux_infer.py prompts.txt --output ./my_book_images
    - Training: A40/A100 required
    - Generation: Can potentially use RTX 4090 or even RTX 3090
 
+## Command Reference
+
+### Quick Reference Commands
+
+```bash
+# Setup (RunPod)
+./runpod_setup.sh
+
+# Full workflow automation
+./quick_start.sh
+
+# Individual workflow steps
+python3 label_images.py                    # Label images
+python3 finetune_flux_train.py             # Train model
+python3 flux_infer.py prompts.txt          # Generate images
+```
+
+### Training Commands
+
+```bash
+# Generate config only (no training)
+python3 finetune_flux_train.py --generate-config-only
+
+# Train with custom steps
+python3 finetune_flux_train.py --steps 1500
+
+# Override trigger word
+python3 finetune_flux_train.py --trigger-word custom_trigger
+
+# Custom config output path
+python3 finetune_flux_train.py --config-path my_config.yaml
+```
+
+### Inference Commands
+
+```bash
+# Basic generation
+python3 flux_infer.py prompts.txt
+
+# All options combined
+python3 flux_infer.py prompts.txt \
+  --lora ./output/flux_lora/checkpoint-1500 \
+  --seed 42 \
+  --steps 8 \
+  --width 1024 \
+  --height 1024 \
+  --output ./final_images
+```
+
+### Labeling Commands
+
+```bash
+# Label all images
+python3 label_images.py
+
+# Overwrite existing captions
+python3 label_images.py --overwrite
+
+# Custom max tokens for longer captions
+python3 label_images.py --max-tokens 50
+
+# Force specific device
+python3 label_images.py --device cuda
+```
+
 ## Troubleshooting
 
 ### Out of Memory Errors
@@ -336,6 +401,67 @@ Reduce image size or steps:
 
 ```bash
 python3 flux_infer.py prompts.txt --width 768 --height 768 --steps 4
+```
+
+### No HF_TOKEN Found
+
+Edit `ENV` file and add:
+
+```bash
+HF_TOKEN=hf_your_token_here
+```
+
+Get token from [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens). Ensure token has "Read access to gated repos" permission.
+
+### Trigger Word Not Found in Captions
+
+- Check `trigger_word` in `config.json`
+- Re-run labeling with `--overwrite` flag: `python3 label_images.py --overwrite`
+- Manually edit caption `.txt` files if needed
+
+### No LoRA Weights Found
+
+- Ensure training completed successfully
+- Check `./output/flux_lora/` for `.safetensors` files
+- Verify checkpoint directories match the step count
+- Check that the LoRA path is correct in inference command
+
+### ai-toolkit Not Found
+
+```bash
+cd /workspace  # or parent directory
+git clone https://github.com/ostris/ai-toolkit.git
+cd ai-toolkit
+git submodule update --init --recursive
+pip install -r requirements.txt
+```
+
+### Validation Checks
+
+**Check GPU availability:**
+
+```bash
+nvidia-smi
+python3 -c "import torch; print('CUDA available:', torch.cuda.is_available())"
+```
+
+**Check token validity:**
+
+```bash
+python3 -c "from dotenv import load_dotenv; import os; load_dotenv('ENV'); print('Token:', os.getenv('HF_TOKEN')[:10] + '...')"
+```
+
+**Count training images:**
+
+```bash
+ls photos/*.jpg | wc -l  # Linux/Mac
+(Get-ChildItem photos\*.jpg).Count  # Windows PowerShell
+```
+
+**Verify configuration:**
+
+```bash
+python3 config.py
 ```
 
 ## Advanced: Automated Workflow
@@ -597,6 +723,112 @@ python flux_infer.py prompts.txt --output ./my_images
 - Guidance scale: 1.0 (recommended for schnell)
 - Supports seeded generation for reproducibility
 - Automatically increments seed for variation when generating multiple images
+
+## Advanced Usage
+
+### Custom Training Configuration
+
+Modify `flux_training_config.yaml` before training for advanced control:
+
+```yaml
+config:
+  process:
+    - type: sd_trainer
+      # Adjust network architecture
+      network:
+        linear: 32              # Higher rank = more capacity (8-64)
+        linear_alpha: 64        # Match or exceed rank
+
+      # Fine-tune learning
+      train:
+        steps: 2000             # More steps for complex subjects
+        lr: 5e-5                # Lower LR for fine-tuning existing knowledge
+
+      # Sample configuration
+      sample:
+        sample_every: 100       # More frequent samples for monitoring
+        prompts:
+          - "your_trigger reading a book"
+          - "your_trigger playing outside"
+```
+
+### Checkpoint Selection
+
+Use different checkpoints for different styles:
+
+```bash
+# Early checkpoint (less overtrained, more general)
+python3 flux_infer.py prompts.txt --lora ./output/flux_lora/checkpoint-500
+
+# Middle checkpoint (balanced)
+python3 flux_infer.py prompts.txt --lora ./output/flux_lora/checkpoint-1000
+
+# Final checkpoint (most trained)
+python3 flux_infer.py prompts.txt --lora ./output/flux_lora/checkpoint-1500
+```
+
+### Batch Generation
+
+Create large prompt files for batch processing:
+
+```bash
+# Generate from many prompts efficiently
+python3 flux_infer.py large_prompts.txt --seed 1000
+```
+
+### Performance Tips
+
+1. **Training:**
+   - Use A40 or A100 GPUs for fastest training
+   - Reduce steps for quicker iteration (400-600 for testing)
+   - Monitor sample images to detect when model converges
+   - Early stopping: If samples look good at step 600, you may not need 800
+
+2. **Generation:**
+   - Batch prompts into a single file for efficiency
+   - Use fixed seed for consistent results
+   - Start with 4 steps (schnell default), increase only if needed
+   - Lower resolution (768×768) generates faster with minimal quality loss
+
+3. **Cost Management (RunPod):**
+   - Stop pod immediately after training/generation
+   - Use spot instances for 50-70% savings (with interruption risk)
+   - Download results and terminate pod
+   - Spin up cheaper GPU for generation-only tasks
+
+## File Descriptions
+
+### Core Scripts
+
+- **finetune_flux_train.py** - Training script; generates YAML config and runs ai-toolkit
+- **flux_infer.py** - Inference script; loads model/LoRA and generates images
+- **label_images.py** - BLIP-based auto-captioning tool
+- **config.py** - Configuration manager with typed accessors
+- **setup_runpod.py** - Python-based RunPod environment setup
+- **runpod_setup.sh** - Bash-based RunPod environment setup
+- **quick_start.sh** - Complete workflow automation script
+
+### Deprecated Scripts
+
+- **generate_images.py** - (DEPRECATED) Thin shim that forwards to flux_infer.py
+- **finetune_flux.py** - (DEPRECATED) Forwards to finetune_flux_train.py
+
+### Configuration Files
+
+- **config.json** - Project configuration (paths, settings, trigger word)
+- **ENV** - Environment variables (HF_TOKEN)
+- **flux_training_config.yaml** - Generated training configuration for ai-toolkit
+- **prompts.txt** - Text prompts for image generation (one per line)
+- **prompts.txt.example** - Example prompts template
+
+### Data Directories
+
+- **photos/** - Training images directory (1024×1024 JPEG + `.txt` captions)
+- **output/flux_lora/** - Trained LoRA checkpoints and sample images
+  - `flux_training_config.yaml` - Training configuration
+  - `*.safetensors` - LoRA weight checkpoints
+  - `samples/` - Sample images generated during training
+- **output/generated_images/** - Final generated images from inference
 
 ## Image Labeling Tool
 
