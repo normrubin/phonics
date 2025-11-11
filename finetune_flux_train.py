@@ -233,8 +233,8 @@ def main():
 
     if args.generate_config_only:
         create_flux_config(
+            config
             dataset_dir,
-            config.flux_training_config_path,
             trigger_word,
             args.steps,
         )
@@ -256,10 +256,9 @@ def main():
     print(f"Found {len(image_files)} images")
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    yaml_path = config.flux_training_config_path
     create_flux_config(
+        config,
         dataset_dir,
-        yaml_path,
         trigger_word,
         args.steps,
     )
