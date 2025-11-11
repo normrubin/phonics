@@ -60,8 +60,10 @@ def create_flux_config(
 
     # Organize output under model_name subdirectory
     yaml_config_path = Path(config.flux_training_config_path)
+    model_dir = yaml_config_path.parent
     model_output_dir = config.output_dir
     model_output_dir.mkdir(parents=True, exist_ok=True)
+    model_dir.mkdir(parents=True, exist_ok=True)
 
     out_dir_q = _q(model_output_dir)
     data_dir_q = _q(dataset_dir)
