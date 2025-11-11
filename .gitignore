@@ -86,8 +86,6 @@ output/
 *.pth
 *.bin
 
-# Training configs (may contain personal paths)
-flux_training_config.yaml
 
 # Logs
 *.log
