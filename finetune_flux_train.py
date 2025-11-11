@@ -233,7 +233,7 @@ def main():
 
     if args.generate_config_only:
         create_flux_config(
-            config
+            config,
             dataset_dir,
             trigger_word,
             args.steps,
