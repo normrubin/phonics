@@ -264,6 +264,126 @@ python3 flux_infer.py prompts.txt --output ./my_book_images
 3. Or select multiple files → Download as Archive
 4. Also download the trained LoRA from `/workspace/phonics/output/flux_lora/` for future use
 
+## Inference-Only Mode (Using Pre-Trained LoRA)
+
+If you've already trained a LoRA model and want to generate new images without retraining, follow these steps:
+
+### Step 1: Set Up a New Pod (or Local Environment)
+
+If using RunPod with a fresh pod:
+
+```bash
+cd /workspace
+git clone https://github.com/normrubin/phonics.git
+cd phonics
+pip install -r requirements.txt
+```
+
+**Required dependencies for inference only:**
+- torch
+- diffusers
+- transformers
+- accelerate
+
+### Step 2: Upload Your LoRA Model
+
+Place your previously trained LoRA weights in the expected location:
+
+```bash
+# Create the output directory structure
+mkdir -p output/flux_lora
+
+# Upload your LoRA .safetensors file(s)
+# Via JupyterLab: Navigate to output/flux_lora/ and upload
+# Via SCP: scp your_lora.safetensors root@pod:/workspace/phonics/output/flux_lora/
+```
+
+### Step 3: Configure Your Trigger Word
+
+Edit `config.json` to include your trigger word (must match the one used during training):
+
+```json
+{
+  "directories": {
+    "photo_images": "./photos",
+    "output": "./output"
+  },
+  "model_settings": {
+    "trigger_word": "your_original_trigger_word",
+    "model_name": "flux_lora"
+  }
+}
+```
+
+### Step 4: Create Your Prompts
+
+Create or edit `prompts.txt` with your generation prompts:
+
+```bash
+nano prompts.txt
+```
+
+Add prompts using your trigger word:
+
+```text
+your_trigger_word reading a storybook
+your_trigger_word playing in the park
+your_trigger_word holding a teddy bear
+```
+
+### Step 5: Generate Images
+
+Run inference with your uploaded LoRA:
+
+```bash
+# Use the latest checkpoint automatically
+python3 flux_infer.py prompts.txt
+
+# Or specify a specific checkpoint
+python3 flux_infer.py prompts.txt --lora ./output/flux_lora/your_checkpoint.safetensors
+
+# With additional options
+python3 flux_infer.py prompts.txt \
+  --lora ./output/flux_lora/checkpoint-1000.safetensors \
+  --seed 42 \
+  --steps 4 \
+  --output ./my_new_images
+```
+
+**What happens:**
+- Script loads FLUX.1-schnell base model from Hugging Face
+- Applies your LoRA weights on top
+- Generates images using your prompts
+- Saves to `./output/generated_images/` (or custom output path)
+
+### Step 6: Download Generated Images
+
+Download your newly generated images:
+- Via JupyterLab: Navigate to `output/generated_images/` and download
+- Generated images are named with timestamps for easy organization
+
+### Notes for Inference-Only Setup
+
+**No training dependencies needed:**
+- You don't need ai-toolkit for inference only
+- You don't need training images or captions
+- You don't need a Hugging Face token (for FLUX.1-schnell with Apache 2.0 license)
+
+**LoRA file naming:**
+- The script auto-detects the latest `.safetensors` file in `output/flux_lora/`
+- Or specify exactly which checkpoint with `--lora` flag
+- LoRA files are typically named like `flux_lora_000001000.safetensors` (step number)
+
+**Cost savings:**
+- Inference is much cheaper than training (~10-30 seconds per image)
+- Can use cheaper GPUs (RTX 4090, RTX 3090) for inference only
+- Consider spinning up a fresh pod just for generation to save costs
+
+**Reusing across projects:**
+- Keep your LoRA weights backed up locally
+- Upload to new pods as needed for different generation tasks
+- The same LoRA can generate unlimited new images with different prompts
+
 ## Cost Management
 
 ### Estimated Costs (RunPod A40)
