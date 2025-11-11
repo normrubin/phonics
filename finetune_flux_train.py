@@ -270,7 +270,7 @@ def main():
         print("\nTraining completed successfully!")
         model_output = yaml_path.parent
         print(f"Model output directory: {model_output}")
-        print(f"  - Config: {yaml_path}")
+        print(f"  - Config: {config.config.flux_training_config_path}")
         print(f"  - Samples: {model_output / 'samples'}")
         print(f"  - Weights: {model_output}")
     else:

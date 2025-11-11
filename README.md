@@ -147,21 +147,24 @@ python3 finetune_flux_train.py
 
 **What happens:**
 
-- Creates `flux_training_config.yaml` in the model output directory
+- Creates `flux_training_config.yaml` in the model output directory. You might edit this version to change some of tuning params.
+- creates a config.yaml file to hold an working copy of the flux_training_config file
 - Runs ai-toolkit training
 - Saves checkpoints every 250 steps to `./output/flux_lora/`
 - Generates sample images every 250 steps to `./output/flux_lora/samples/`
+- saves the lora model as output/flux_lora/flux_lora.safetensors
 
 **Monitor progress:**
 
 - Watch the terminal for step updates
-- Sample images appear under `output/flux_lora/`
+- Sample images appear under `output/flux_lora/samples `
 - Check GPU usage: `nvidia-smi`
 
 **To stop training:**
 
 - Press `Ctrl+C` (wait for checkpoint message)
 - Later restart from the latest checkpoint automatically
+- save a copt of the lora model safe tensors
 
 ## Generating Images
 
@@ -179,7 +182,7 @@ Run the inference script (`flux_infer.py`). The older `generate_images.py` is
 python3 flux_infer.py
 ```
 
-`flux_infer.py` now contains
+`images will be output/generated_images `
 
 **Options:**
 
