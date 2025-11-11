@@ -265,7 +265,7 @@ def main():
         args.steps,
     )
 
-    success = run_training(yaml_path)
+    success = run_training(config.flux_training_config_path)
     if success:
         print("\nTraining completed successfully!")
         model_output = yaml_path.parent
