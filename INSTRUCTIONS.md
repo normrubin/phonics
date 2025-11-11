@@ -1,5 +1,17 @@
 # Phonics Book Generator - Instructions
 
+> **⚠️ DEPRECATED:** This guide has been merged into the main [README.md](README.md).
+> Please refer to README.md for the most up-to-date documentation including:
+> - Command Reference
+> - Troubleshooting & Validation
+> - File Descriptions
+> - Advanced Usage
+> - Complete workflow instructions
+>
+> This file is kept for reference only and may be removed in a future update.
+
+---
+
 Complete workflow guide for creating personalized phonics books with AI-generated images.
 
 ## Table of Contents
