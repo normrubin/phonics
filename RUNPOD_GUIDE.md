@@ -1,5 +1,12 @@
 # RunPod Setup Guide for Phonics Book Generator
 
+> **⚠️ DEPRECATED:** This guide has been merged into the main [README.md](README.md).
+> Please refer to the "RunPod Setup Guide" section in README.md for the most up-to-date instructions.
+>
+> This file is kept for reference only and may be removed in a future update.
+
+---
+
 This guide walks you through setting up and running the Phonics Book Generator on RunPod.
 
 ## Table of Contents
