@@ -4,9 +4,10 @@
 Merged implementation: previous standalone generate_images.py has been
 removed. Use this script for all image generation:
 
-    python flux_infer.py prompts.txt [options]
+    python flux_infer.py [prompts_file] [options]
 
 Features:
+    - Uses prompts.txt by default (no argument needed)
     - Auto-detect LoRA weights in ./output/flux_lora/
     - Automatic trigger word prefixing (idempotent)
     - Seeded generation with incremental variation
@@ -138,23 +139,28 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Generate using fine-tuned LoRA
-  python flux_infer.py prompts.txt
+  # Generate using default prompts.txt with fine-tuned LoRA
+  python flux_infer.py
+
+  # Generate from custom prompt file
+  python flux_infer.py my_prompts.txt
 
   # Generate with custom LoRA path
-  python flux_infer.py prompts.txt --lora path/to/lora
+  python flux_infer.py --lora path/to/lora
 
   # Generate with specific seed for reproducibility
-  python flux_infer.py prompts.txt --seed 42
+  python flux_infer.py --seed 42
 
   # Generate larger images with more steps
-  python flux_infer.py prompts.txt --width 1024 --height 1024 --steps 8
+  python flux_infer.py --width 1024 --height 1024 --steps 8
         """,
     )
 
     parser.add_argument(
         "prompt_file",
-        help="Text file with prompts (one per line)",
+        nargs="?",
+        default="prompts.txt",
+        help="Text file with prompts (one per line, default: prompts.txt)",
     )
     parser.add_argument(
         "--lora",
