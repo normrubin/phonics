@@ -202,6 +202,70 @@ python3 flux_infer.py prompts.txt --output ./my_book_images
 
 **Generation time:** ~10-30 seconds per image on A40
 
+## Interactive Inference Notebook (Optional)
+
+If you prefer an interactive, step-by-step workflow, use the Jupyter notebook `flux_inference.ipynb`.
+
+### What the notebook provides
+
+- Automatic device setup (CUDA/MPS/CPU) and model loading
+- Optional Hugging Face login cell that reads token from:
+   - `ENV` file (line starting with `HF_TOKEN=`)
+   - Environment variables `HF_TOKEN` or `HUGGINGFACE_TOKEN`
+   - Interactive prompt (fallback)
+- Auto-loading prompts from `prompts.txt` (ignores blank lines and lines starting with `#`)
+- Helper functions for generation:
+   - `generate_single(prompt, steps=4, seed=None, skip_preprocess=False, four_variations=False)`
+      - `skip_preprocess=True` will use your prompt as-is (no normalization or trigger prefix)
+      - `four_variations=True` generates 4 images using sequential seeds
+   - `generate_and_display(prompts, steps=4, seed=None, variations_per_prompt=1)`
+      - Set `variations_per_prompt=4` to get four images for each prompt deterministically
+- Basic benchmarking and a CSV log of generations at `output/generated_images/inference_log.csv`
+
+### How to open and run
+
+1. In JupyterLab (RunPod) or your local environment, open `flux_inference.ipynb`.
+2. Run the cells from top to bottom:
+    - Imports & device
+    - (Optional) Hugging Face login
+    - Config & LoRA discovery
+    - Prompts loading from `prompts.txt`
+    - Generation helpers and usage cells
+
+Images are saved under `output/generated_images/`.
+
+### Prompt handling in the notebook
+
+- The notebook automatically prefixes prompts with your configured trigger word (`config.json`) when using the helper utilities.
+- You do NOT need to include `[trigger]` in notebook prompts. If you provide a fully-prefixed prompt yourself, set `skip_preprocess=True`.
+
+### Quick examples (inside the notebook)
+
+```python
+# Single image (auto-prefixes with your trigger word)
+generate_single("reading a phonics book in a cozy library")
+
+# Four variations with a fixed seed
+generate_single("holding alphabet blocks", four_variations=True, seed=12345)
+
+# Use an already-prefixed prompt and skip preprocessing
+generate_single(
+      "photo of alicegirl child reading alphabet book",
+      skip_preprocess=True,
+      four_variations=True,
+)
+
+# Batch: use prompts loaded from prompts.txt and generate 4 per prompt
+final_prompts = prefix_prompts(user_prompts, cfg.trigger_word)
+generate_and_display(final_prompts, variations_per_prompt=4, steps=6, seed=42)
+```
+
+If any package is missing when running locally, install project requirements first:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Downloading Results
 
 ### JupyterLab Interface
