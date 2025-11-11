@@ -59,7 +59,7 @@ def create_flux_config(
         return f"'{s}'"
 
     # Organize output under model_name subdirectory
-    yaml_config_path = Path(config.yaml_config_path)
+    yaml_config_path = Path(config.flux_training_config_path)
     model_output_dir = config.output_dir
     model_output_dir.mkdir(parents=True, exist_ok=True)
 
