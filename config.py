@@ -128,9 +128,14 @@ class Config:
         return self.get_str("model_settings.trigger_word", "")
 
     @property
+    def model_name(self) -> str:
+        """Get the model name for training output organization"""
+        return self.get_str("model_settings.model_name", "flux_lora")
+
+    @property
     def flux_training_config_path(self) -> Path:
         """Get the path to the FLUX training config YAML file"""
-        return self.output_dir / "flux_lora" / "flux_training_config.yaml"
+        return self.output_dir / self.model_name / "flux_training_config.yaml"
 
     def ensure_directories(self):
         """Create all configured directories if they don't exist"""
