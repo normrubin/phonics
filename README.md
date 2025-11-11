@@ -359,18 +359,40 @@ phonics/
 │   ├── image_001.txt           # Auto-generated captions
 │   └── ...
 ├── output/                      # All generated outputs
-│   ├── flux_lora/              # Model-specific directory
+│   ├── flux_lora/              # Model output directory (configurable via config.json)
 │   │   ├── flux_training_config.yaml   # Training configuration
 │   │   ├── *.safetensors      # LoRA weight checkpoints
 │   │   └── samples/            # Sample images during training
 │   └── generated_images/       # Final inference outputs
-├── config.json                  # Project configuration
+├── config.json                  # Project configuration (paths, model_name, trigger_word)
 ├── ENV                          # Environment variables (HF_TOKEN)
+├── config.py                    # Configuration management with typed properties
 ├── finetune_flux_train.py      # Training script
 ├── flux_infer.py               # Inference script
 ├── label_images.py             # Caption generation tool
-└── setup_runpod.py             # RunPod setup automation
+├── setup_runpod.py             # RunPod setup automation
+├── runpod_setup.sh             # Automated RunPod setup script
+└── quick_start.sh              # Complete workflow automation
 ```
+
+## Configuration Management
+
+This project uses a centralized configuration system through `config.json` and the `Config` class in `config.py`.
+
+### Key Configuration Properties
+
+- **`photo_images_dir`** - Directory containing training images (default: `./photos`)
+- **`output_dir`** - Base output directory (default: `./output`)
+- **`trigger_word`** - Unique identifier for your training subject
+- **`model_name`** - Model output directory name (default: `flux_lora`)
+- **`flux_training_config_path`** - Computed path to training YAML: `output/<model_name>/flux_training_config.yaml`
+
+### Benefits of Centralized Config
+
+✅ **Single source of truth** - All paths defined in one place  
+✅ **Type-safe access** - Properties with proper types prevent errors  
+✅ **Consistent paths** - Eliminates duplicate config files in different locations  
+✅ **Easy customization** - Change model_name in config.json to organize multiple models
 
 ## Project Components
 
@@ -436,21 +458,54 @@ python finetune_flux_train.py
 
 The script will:
 
-- Load settings from `config.json` (dataset path, trigger word, output directory)
-- Generate a training configuration file (`flux_training_config.yaml`)
+- Load settings from `config.json` via the `Config` class
+- Generate training configuration (`flux_training_config.yaml`) in the model output directory
 - Run the ai-toolkit training process
-- Save the trained LoRA model to `./output/flux_lora/`
+- Save the trained LoRA model to `./output/<model_name>/` (default: `./output/flux_lora/`)
+- Create sample images during training in `./output/<model_name>/samples/`
 
 **Training Configuration:**
 
 The default configuration trains a LoRA adapter with:
 
-- 2000 training steps
+- 800 training steps (configurable via `--steps` argument)
 - 1024×1024 resolution
 - Sample images generated every 250 steps
 - Model checkpoints saved every 250 steps
 
-You can modify these settings by editing the generated `flux_training_config.yaml` file before training, or by modifying the `create_flux_config()` function in `finetune_flux_train.py`.
+**Configuration Management:**
+
+All paths and settings are centrally managed through `config.json`:
+
+```json
+{
+  "directories": {
+    "photo_images": "./photos",
+    "output": "./output"
+  },
+  "model_settings": {
+    "trigger_word": "your_trigger",
+    "model_name": "flux_lora"
+  }
+}
+```
+
+The `config.py` module provides typed properties for accessing these settings:
+- `config.photo_images_dir` - Training images directory
+- `config.output_dir` - Output directory
+- `config.trigger_word` - Trigger word for training
+- `config.model_name` - Model name (default: "flux_lora")
+- `config.flux_training_config_path` - Full path to YAML config file
+
+**Customizing Training Steps:**
+
+```bash
+# Train with custom number of steps
+python finetune_flux_train.py --steps 1500
+
+# Generate config only without training
+python finetune_flux_train.py --generate-config-only --steps 1200
+```
 
 ### Step 3: Image Generation
 
