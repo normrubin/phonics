@@ -133,6 +133,7 @@ This will:
 - Process each image with BLIP captioning model
 - Create `.txt` files with captions
 - Append your trigger word to each caption
+- you should review the labels and update them if they do seem ok
 
 ### Step 3: Run Fine-Tuning
 
