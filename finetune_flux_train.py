@@ -27,7 +27,7 @@ def validate_hf_token(token):
     if not token:
         return False
     try:
-        from huggingface_hub import whoami
+        from huggingface_hub import whoami  # type: ignore
         info = whoami(token=token)
         print(info)
         return True
@@ -70,7 +70,7 @@ def create_flux_config(
 
     out_dir_q = _q(model_output_dir)
     data_dir_q = _q(dataset_dir)
-    ptw = f"photo of {tw} " if tw else ""
+    ptw = f"realistic 8k photo of {tw} " if tw else ""
     model_name = yaml_config_path.parent.name  # Model name from directory
     lines = [
         "# FLUX.1-schnell LoRA Training Configuration",

@@ -54,7 +54,6 @@ In the terminal, run:
 cd /workspace
 git clone https://github.com/normrubin/phonics.git
 cd phonics
-chmod +x runpod_setup.sh
 ./runpod_setup.sh
 ```
 
