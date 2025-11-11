@@ -18,9 +18,8 @@ This guide walks you through setting up and running the Phonics Book Generator o
 
 **GPU:** A40 (48GB VRAM) or A100 (40GB/80GB VRAM)
 
-- FLUX.1-schnell training requires at least 24GB VRAM
+- FLUX.1-schnell training requires at least 32gb unless special flags are used. (I'm going to leave out describing thouse flags)
 - A40 is the most cost-effective option for this project
-- RTX 4090 (24GB) works but requires `low_vram: true` setting
 
 **Storage:** At least 50GB
 
@@ -36,7 +35,7 @@ This guide walks you through setting up and running the Phonics Book Generator o
 1. Go to [RunPod](https://runpod.io)
 2. Click "Deploy" → "GPU Pods"
 3. Select your GPU (A40 recommended)
-4. Choose "RunPod PyTorch 2.x" or similar template
+4. Choose "RunPod PyTorch 2.8" or similar template
 5. Set storage to at least 50GB
 6. Deploy pod
 
