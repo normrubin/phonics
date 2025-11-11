@@ -33,7 +33,7 @@ This project generates personalized phonics books by combining AI-powered image 
 ## Prerequisites
 
 1. **RunPod Account**: Sign up at [RunPod.io](https://runpod.io) for GPU access
-   - Recommended GPU: A40 (48GB VRAM) at ~$0.79/hour
+   - Recommended GPU: A40 (48GB VRAM) at ~$0.40/hour
    - Add credits to your account (minimum $10 recommended)
    - Storage: At least 50GB (base model ~20GB, training data 1-2GB, output 5-10GB)
 2. **Hugging Face Account**: Create account at [HuggingFace.co](https://huggingface.co)
@@ -52,32 +52,19 @@ This project generates personalized phonics books by combining AI-powered image 
 
 **GPU:** A40 (48GB VRAM) or A100 (40GB/80GB VRAM)
 
-- FLUX.1-schnell training requires at least 32GB VRAM (unless special flags are used)
-- A40 is the most cost-effective option for this project
-
-**Storage:** At least 50GB
-
-- Base model: ~20GB
-- Training data: 1-2GB
-- Output models: 5-10GB
-- Generated images: Variable
-
-**Template:** PyTorch or CUDA-enabled template recommended
-
 ### Steps to Create Instance
 
 1. Go to [RunPod](https://runpod.io)
 2. Click "Deploy" → "GPU Pods"
 3. Select your GPU (A40 recommended)
 4. Choose "RunPod PyTorch 2.8" or similar CUDA template
-5. Set storage to at least 50GB
-6. Deploy pod
+5. Deploy pod
 
 ## Initial Setup
 
 ### Step 1: Connect to Your Pod
 
-Once your pod is running, click "Connect" and choose: **JupyterLab** (good for interactive work)
+Once your pod is running, click "Connect" and choose: **JupyterLab** (good for interactive work). Then in the lab open a terminal
 
 ### Step 2: Run Setup Script
 
@@ -98,9 +85,9 @@ The setup script will **interactively prompt** you for:
    - Get one from: [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
    - The token is validated immediately against the Hugging Face API
    - If valid, it's saved to the `ENV` file automatically
-2. **Trigger Word** - Enter your unique identifier (e.g., your child's name)
+2. **Trigger Word** - Enter your unique identifier
 
-   - Should be a combination of letters and underscores that is not a common word the model has already seen
+   - Should be a combination of letters and underscores that is not a word the model has already seen
    - This will be automatically added to all image captions during training
    - Saved to `config.json` for you
 
@@ -113,41 +100,17 @@ The script will also:
 
 **Note:** If you need to update these values later, you can:
 
-- Edit `ENV` file for the token: `nano ENV`
-- Edit `config.json` for the trigger word: `nano config.json`
+- Edit `ENV` file for the token.
+- Edit `config.json` for the trigger word.
 
 ## Uploading Training Images
 
 You need to upload 10-20 high-quality training images (1024×1024 JPEG recommended) to `/workspace/phonics/photos/`.
 
-### Upload Methods
-
-#### Option 1: Using RunPod File Browser
-
 1. Open your pod's JupyterLab interface
 2. Navigate to `/workspace/phonics/photos/`
 3. Click "Upload" and select your 10-20 training images
 4. All images should be 1024×1024 JPEG files
-
-#### Option 2: Using SCP/SFTP
-
-If you enabled SSH access:
-
-```bash
-scp -P [PORT] -i ~/.ssh/id_ed25519 /path/to/images/*.jpg \
-  root@[POD_IP]:/workspace/phonics/photos/
-```
-
-#### Option 3: Using wget/curl
-
-If your images are hosted online:
-
-```bash
-cd /workspace/phonics/photos/
-wget https://your-server.com/image1.jpg
-wget https://your-server.com/image2.jpg
-# ... etc
-```
 
 ## Training the Model
 
@@ -179,13 +142,7 @@ Start the training process (training now split from inference):
 python3 finetune_flux_train.py
 ```
 
-Or just generate the config without starting training:
-
-```bash
-python3 finetune_flux_train.py --generate-config-only
-```
-
-**Training time:** Approximately 2-4 hours on A40 for 800–2000 steps (default config uses 800; can be customized with `--steps` argument).
+**Training time:** Approximately 1-2  hours on A40 for 800–2000 steps (default config uses 800; can be customized with `--steps` argument).
 
 **What happens:**
 
@@ -207,35 +164,21 @@ python3 finetune_flux_train.py --generate-config-only
 
 ## Generating Images
 
-### Step 1: Create Prompts File
+### The prompts.txt file
 
-Edit your prompts:
+Edit your prompts:  prompts.txt
 
-```bash
-nano prompts.txt
-```
-
-Add one prompt per line (use the trigger word you configured during setup):
-
-```text
-your_trigger_word reading a phonics book in a cozy library
-your_trigger_word holding the letter A on a bright sunny day
-your_trigger_word playing with alphabet blocks
-```
-
-Save with `Ctrl+X`, `Y`, `Enter`
+the string [trigger] will be relaced by your trigger word when the file is used.
 
 ### Step 2: Generate Images
 
 Run the inference script (`flux_infer.py`). The older `generate_images.py` is
-deprecated and kept only as a compatibility shim.
 
 ```bash
-python3 flux_infer.py prompts.txt
+python3 flux_infer.py
 ```
 
-`flux_infer.py` now contains the full inference logic (merged from the former
-`generate_images.py`).
+`flux_infer.py` now contains
 
 **Options:**
 
@@ -276,14 +219,8 @@ If using RunPod with a fresh pod:
 cd /workspace
 git clone https://github.com/normrubin/phonics.git
 cd phonics
-pip install -r requirements.txt
+setup.sh
 ```
-
-**Required dependencies for inference only:**
-- torch
-- diffusers
-- transformers
-- accelerate
 
 ### Step 2: Upload Your LoRA Model
 
@@ -295,62 +232,27 @@ mkdir -p output/flux_lora
 
 # Upload your LoRA .safetensors file(s)
 # Via JupyterLab: Navigate to output/flux_lora/ and upload
-# Via SCP: scp your_lora.safetensors root@pod:/workspace/phonics/output/flux_lora/
+
 ```
 
 ### Step 3: Configure Your Trigger Word
 
 Edit `config.json` to include your trigger word (must match the one used during training):
 
-```json
-{
-  "directories": {
-    "photo_images": "./photos",
-    "output": "./output"
-  },
-  "model_settings": {
-    "trigger_word": "your_original_trigger_word",
-    "model_name": "flux_lora"
-  }
-}
-```
-
 ### Step 4: Create Your Prompts
 
-Create or edit `prompts.txt` with your generation prompts:
-
-```bash
-nano prompts.txt
-```
-
-Add prompts using your trigger word:
-
-```text
-your_trigger_word reading a storybook
-your_trigger_word playing in the park
-your_trigger_word holding a teddy bear
-```
+Create or edit `prompts.txt` with your prompts
 
 ### Step 5: Generate Images
 
 Run inference with your uploaded LoRA:
 
-```bash
 # Use the latest checkpoint automatically
-python3 flux_infer.py prompts.txt
 
-# Or specify a specific checkpoint
-python3 flux_infer.py prompts.txt --lora ./output/flux_lora/your_checkpoint.safetensors
-
-# With additional options
-python3 flux_infer.py prompts.txt \
-  --lora ./output/flux_lora/checkpoint-1000.safetensors \
-  --seed 42 \
-  --steps 4 \
-  --output ./my_new_images
-```
+python3 flux_infer.py
 
 **What happens:**
+
 - Script loads FLUX.1-schnell base model from Hugging Face
 - Applies your LoRA weights on top
 - Generates images using your prompts
@@ -359,38 +261,27 @@ python3 flux_infer.py prompts.txt \
 ### Step 6: Download Generated Images
 
 Download your newly generated images:
+
 - Via JupyterLab: Navigate to `output/generated_images/` and download
 - Generated images are named with timestamps for easy organization
 
 ### Notes for Inference-Only Setup
 
 **No training dependencies needed:**
-- You don't need ai-toolkit for inference only
+
 - You don't need training images or captions
-- You don't need a Hugging Face token (for FLUX.1-schnell with Apache 2.0 license)
 
 **LoRA file naming:**
+
 - The script auto-detects the latest `.safetensors` file in `output/flux_lora/`
 - Or specify exactly which checkpoint with `--lora` flag
 - LoRA files are typically named like `flux_lora_000001000.safetensors` (step number)
 
-**Cost savings:**
-- Inference is much cheaper than training (~10-30 seconds per image)
-- Can use cheaper GPUs (RTX 4090, RTX 3090) for inference only
-- Consider spinning up a fresh pod just for generation to save costs
-
 **Reusing across projects:**
+
 - Keep your LoRA weights backed up locally
 - Upload to new pods as needed for different generation tasks
 - The same LoRA can generate unlimited new images with different prompts
-
-## Cost Management
-
-### Estimated Costs (RunPod A40)
-
-- **Training:** 2-4 hours @ ~$0.79/hr = $1.60-$3.20
-- **Generation:** 20 images @ 20 sec each = ~$0.10
-- **Total project:** ~$2-5 (one-time training + generation)
 
 ### Cost Saving Tips
 
@@ -398,10 +289,7 @@ Download your newly generated images:
 
    - Training completed? Stop the pod immediately, download images and LoRA, then terminate
    - Only pay for active time
-2. **Use spot instances**
-
-   - 50-70% cheaper than on-demand
-   - Risk of interruption (save checkpoints frequently!)
+2.
 3. **Download and terminate**
 
    - Download your LoRA model
@@ -412,576 +300,3 @@ Download your newly generated images:
    - Prepare all prompts beforehand
    - Generate all images in one session
    - Download everything and stop
-5. **Use cheaper GPUs for generation**
-
-   - Training: A40/A100 required
-   - Generation: Can potentially use RTX 4090 or even RTX 3090
-
-## Command Reference
-
-### Quick Reference Commands
-
-```bash
-# Setup (RunPod)
-./runpod_setup.sh
-
-# Full workflow automation
-./quick_start.sh
-
-# Individual workflow steps
-python3 label_images.py                    # Label images
-python3 finetune_flux_train.py             # Train model
-python3 flux_infer.py prompts.txt          # Generate images
-```
-
-### Training Commands
-
-```bash
-# Generate config only (no training)
-python3 finetune_flux_train.py --generate-config-only
-
-# Train with custom steps
-python3 finetune_flux_train.py --steps 1500
-
-# Override trigger word
-python3 finetune_flux_train.py --trigger-word custom_trigger
-
-# Custom config output path
-python3 finetune_flux_train.py --config-path my_config.yaml
-```
-
-### Inference Commands
-
-```bash
-# Basic generation
-python3 flux_infer.py prompts.txt
-
-# All options combined
-python3 flux_infer.py prompts.txt \
-  --lora ./output/flux_lora/checkpoint-1500 \
-  --seed 42 \
-  --steps 8 \
-  --width 1024 \
-  --height 1024 \
-  --output ./final_images
-```
-
-### Labeling Commands
-
-```bash
-# Label all images
-python3 label_images.py
-
-# Overwrite existing captions
-python3 label_images.py --overwrite
-
-# Custom max tokens for longer captions
-python3 label_images.py --max-tokens 50
-
-# Force specific device
-python3 label_images.py --device cuda
-```
-
-## Troubleshooting
-
-### Out of Memory Errors
-
-Edit `flux_training_config.yaml` before training:
-
-```yaml
-model:
-  low_vram: true
-  quantize: true
-```
-
-Reduce batch size:
-
-```yaml
-train:
-  batch_size: 1
-  gradient_accumulation_steps: 2
-```
-
-### Training Interrupted
-
-Resume from last checkpoint - ai-toolkit does this automatically when you restart.
-
-### CUDA Errors
-
-Check GPU availability:
-
-```bash
-nvidia-smi
-python3 -c "import torch; print(torch.cuda.is_available())"
-```
-
-### Slow Generation
-
-Reduce image size or steps:
-
-```bash
-python3 flux_infer.py prompts.txt --width 768 --height 768 --steps 4
-```
-
-### No HF_TOKEN Found
-
-Edit `ENV` file and add:
-
-```bash
-HF_TOKEN=hf_your_token_here
-```
-
-Get token from [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens). Ensure token has "Read access to gated repos" permission.
-
-### Trigger Word Not Found in Captions
-
-- Check `trigger_word` in `config.json`
-- Re-run labeling with `--overwrite` flag: `python3 label_images.py --overwrite`
-- Manually edit caption `.txt` files if needed
-
-### No LoRA Weights Found
-
-- Ensure training completed successfully
-- Check `./output/flux_lora/` for `.safetensors` files
-- Verify checkpoint directories match the step count
-- Check that the LoRA path is correct in inference command
-
-### ai-toolkit Not Found
-
-```bash
-cd /workspace  # or parent directory
-git clone https://github.com/ostris/ai-toolkit.git
-cd ai-toolkit
-git submodule update --init --recursive
-pip install -r requirements.txt
-```
-
-### Validation Checks
-
-**Check GPU availability:**
-
-```bash
-nvidia-smi
-python3 -c "import torch; print('CUDA available:', torch.cuda.is_available())"
-```
-
-**Check token validity:**
-
-```bash
-python3 -c "from dotenv import load_dotenv; import os; load_dotenv('ENV'); print('Token:', os.getenv('HF_TOKEN')[:10] + '...')"
-```
-
-**Count training images:**
-
-```bash
-ls photos/*.jpg | wc -l  # Linux/Mac
-(Get-ChildItem photos\*.jpg).Count  # Windows PowerShell
-```
-
-**Verify configuration:**
-
-```bash
-python3 config.py
-```
-
-## Advanced: Automated Workflow
-
-The `quick_start.sh` script automates the complete workflow:
-
-```bash
-cd /workspace/phonics
-chmod +x quick_start.sh
-./quick_start.sh
-```
-
-**Prerequisites:**
-
-- `ENV` file must exist with valid `HF_TOKEN` (created during setup)
-- At least 5 training images in `./photos/` directory
-
-This will automatically run:
-
-1. Token validation
-2. Image labeling
-3. Model training (with confirmation prompt, uses `finetune_flux_train.py` internally)
-4. Image generation (if `prompts.txt` exists, via `flux_infer.py`)
-
-## Support
-
-If you encounter issues:
-
-1. Check the main [README.md](README.md) for general documentation
-2. Review [ai-toolkit issues](https://github.com/ostris/ai-toolkit/issues)
-3. Join the ai-toolkit Discord for support
-
-## Cleanup
-
-When completely done:
-
-```bash
-# Optional: Save LoRA model to your local machine first!
-# Then delete workspace to free storage
-rm -rf /workspace/phonics
-rm -rf /workspace/ai-toolkit
-```
-
-**Important:** Stop or terminate your pod to avoid ongoing charges!
-
----
-
-## Local Development (Non-RunPod)
-
-Key scripts (train/infer split):
-
-- Training + config generation: `finetune_flux_train.py`
-- Inference (image generation): `flux_infer.py` (merged implementation; `generate_images.py` deprecated shim)
-
-## Project Structure
-
-```
-phonics/
-├── photos/                      # Training images (1024×1024 JPEG)
-│   ├── image_001.jpg
-│   ├── image_001.txt           # Auto-generated captions
-│   └── ...
-├── output/                      # All generated outputs
-│   ├── flux_lora/              # Model output directory (configurable via config.json)
-│   │   ├── flux_training_config.yaml   # Training configuration
-│   │   ├── *.safetensors      # LoRA weight checkpoints
-│   │   └── samples/            # Sample images during training
-│   └── generated_images/       # Final inference outputs
-├── config.json                  # Project configuration (paths, model_name, trigger_word)
-├── ENV                          # Environment variables (HF_TOKEN)
-├── config.py                    # Configuration management with typed properties
-├── finetune_flux_train.py      # Training script
-├── flux_infer.py               # Inference script
-├── label_images.py             # Caption generation tool
-├── setup_runpod.py             # RunPod setup automation
-├── runpod_setup.sh             # Automated RunPod setup script
-└── quick_start.sh              # Complete workflow automation
-```
-
-## Configuration Management
-
-This project uses a centralized configuration system through `config.json` and the `Config` class in `config.py`.
-
-### Key Configuration Properties
-
-- **`photo_images_dir`** - Directory containing training images (default: `./photos`)
-- **`output_dir`** - Base output directory (default: `./output`)
-- **`trigger_word`** - Unique identifier for your training subject
-- **`model_name`** - Model output directory name (default: `flux_lora`)
-- **`flux_training_config_path`** - Computed path to training YAML: `output/<model_name>/flux_training_config.yaml`
-
-### Benefits of Centralized Config
-
-✅ **Single source of truth** - All paths defined in one place
-✅ **Type-safe access** - Properties with proper types prevent errors
-✅ **Consistent paths** - Eliminates duplicate config files in different locations
-✅ **Easy customization** - Change model_name in config.json to organize multiple models
-
-## Project Components
-
-This project consists of four main steps:
-
-1. **Fine-tuning a Vision Model** - Train the model to generate recognizable images of the specific child. The resulting model can be reused for other projects.
-2. **Content Generation** - Create the text, image descriptions, and layout for the phonics book
-3. **Image Generation** - Generate images for each image description
-4. **Book Assembly** - Compile the final formatted book
-
-## Workflow
-
-### Step 1: Image Preparation
-
-Select 10 to 20 images of the child. They should be a mix of headshots and full-body portraits in various settings, poses, and lighting conditions. Place all images directly in the `./photos` directory. All images must be 1024×1024 pixels in JPEG format (may require interactive cropping or upscaling).
-
-### Step 1a: Resize images
-
-Resize your images to 1024×1024 pixels using your preferred image editing tool.
-
-### Step 1b: Create captions
-
-Generate descriptive captions for each image using the automated labeling tool:
-
-```bash
-python label_images.py
-```
-
-The labeling tool uses the BLIP image captioning model to automatically generate descriptive captions and saves them as `.txt` files alongside each image (e.g., `pict_1.jpg` → `pict_1.txt`). The trigger word is always taken from your config.json.
-
-### Step 2: Model Fine-Tuning
-
-Fine-tune the FLUX.1-schnell model on the prepared images using the ai-toolkit.
-
-**Prerequisites:**
-
-1. Clone and set up ai-toolkit:
-
-```bash
-   cd ..
-   git clone https://github.com/ostris/ai-toolkit.git
-   cd ai-toolkit
-   python -m venv venv
-   venv\Scripts\activate  # Windows
-   pip install torch
-   pip install -r requirements.txt
-
-```
-
-1. Create an `ENV` file in the phonics project root:
-
-```bash
-HF_TOKEN=your_huggingface_token_here
-```
-
-   **Note:** FLUX.1-schnell has an Apache 2.0 license and doesn't require a Hugging Face token. The token is optional but recommended for other models.
-
-**Run Fine-tuning:**
-
-```bash
-python finetune_flux_train.py
-```
-
-The script will:
-
-- Load settings from `config.json` via the `Config` class
-- Generate training configuration (`flux_training_config.yaml`) in the model output directory
-- Run the ai-toolkit training process
-- Save the trained LoRA model to `./output/<model_name>/` (default: `./output/flux_lora/`)
-- Create sample images during training in `./output/<model_name>/samples/`
-
-**Training Configuration:**
-
-The default configuration trains a LoRA adapter with:
-
-- 800 training steps (configurable via `--steps` argument)
-- 1024×1024 resolution
-- Sample images generated every 250 steps
-- Model checkpoints saved every 250 steps
-
-**Configuration Management:**
-
-All paths and settings are centrally managed through `config.json`:
-
-```json
-{
-  "directories": {
-    "photo_images": "./photos",
-    "output": "./output"
-  },
-  "model_settings": {
-    "trigger_word": "your_trigger",
-    "model_name": "flux_lora"
-  }
-}
-```
-
-The `config.py` module provides typed properties for accessing these settings:
-- `config.photo_images_dir` - Training images directory
-- `config.output_dir` - Output directory
-- `config.trigger_word` - Trigger word for training
-- `config.model_name` - Model name (default: "flux_lora")
-- `config.flux_training_config_path` - Full path to YAML config file
-
-**Customizing Training Steps:**
-
-```bash
-# Train with custom number of steps
-python finetune_flux_train.py --steps 1500
-
-# Generate config only without training
-python finetune_flux_train.py --generate-config-only --steps 1200
-```
-
-### Step 3: Image Generation
-
-Generate images from text prompts using the fine-tuned model.
-
-**Create a prompts file:**
-
-Create a text file with your prompts (one per line). See `prompts.txt.example` for reference:
-
-```text
-# Example prompts
-[trigger] reading a book in a cozy library
-[trigger] playing with colorful alphabet blocks
-[trigger] holding the letter A on a bright sunny day
-```
-
-**Generate images:**
-
-```bash
-python flux_infer.py prompts.txt
-```
-
-The script will:
-
-- Load the fine-tuned FLUX.1-schnell model with your LoRA weights
-- Read prompts from the specified file
-- Generate 1024×1024 images for each prompt
-- Save images to `./output/generated_images/`
-
-**Advanced options:**
-
-```bash
-# Use custom LoRA weights
-python flux_infer.py prompts.txt --lora path/to/lora
-
-# Generate with specific seed for reproducibility
-python flux_infer.py prompts.txt --seed 42
-
-# Generate with more inference steps (slower but potentially higher quality)
-python flux_infer.py prompts.txt --steps 8
-
-# Specify output directory
-python flux_infer.py prompts.txt --output ./my_images
-```
-
-**Generation Settings:**
-
-- Default: 1024×1024 pixels, 4 inference steps (optimized for FLUX.1-schnell)
-- Guidance scale: 1.0 (recommended for schnell)
-- Supports seeded generation for reproducibility
-- Automatically increments seed for variation when generating multiple images
-
-## Advanced Usage
-
-### Custom Training Configuration
-
-Modify `flux_training_config.yaml` before training for advanced control:
-
-```yaml
-config:
-  process:
-    - type: sd_trainer
-      # Adjust network architecture
-      network:
-        linear: 32              # Higher rank = more capacity (8-64)
-        linear_alpha: 64        # Match or exceed rank
-
-      # Fine-tune learning
-      train:
-        steps: 2000             # More steps for complex subjects
-        lr: 5e-5                # Lower LR for fine-tuning existing knowledge
-
-      # Sample configuration
-      sample:
-        sample_every: 100       # More frequent samples for monitoring
-        prompts:
-          - "your_trigger reading a book"
-          - "your_trigger playing outside"
-```
-
-### Checkpoint Selection
-
-Use different checkpoints for different styles:
-
-```bash
-# Early checkpoint (less overtrained, more general)
-python3 flux_infer.py prompts.txt --lora ./output/flux_lora/checkpoint-500
-
-# Middle checkpoint (balanced)
-python3 flux_infer.py prompts.txt --lora ./output/flux_lora/checkpoint-1000
-
-# Final checkpoint (most trained)
-python3 flux_infer.py prompts.txt --lora ./output/flux_lora/checkpoint-1500
-```
-
-### Batch Generation
-
-Create large prompt files for batch processing:
-
-```bash
-# Generate from many prompts efficiently
-python3 flux_infer.py large_prompts.txt --seed 1000
-```
-
-### Performance Tips
-
-1. **Training:**
-   - Use A40 or A100 GPUs for fastest training
-   - Reduce steps for quicker iteration (400-600 for testing)
-   - Monitor sample images to detect when model converges
-   - Early stopping: If samples look good at step 600, you may not need 800
-
-2. **Generation:**
-   - Batch prompts into a single file for efficiency
-   - Use fixed seed for consistent results
-   - Start with 4 steps (schnell default), increase only if needed
-   - Lower resolution (768×768) generates faster with minimal quality loss
-
-3. **Cost Management (RunPod):**
-   - Stop pod immediately after training/generation
-   - Use spot instances for 50-70% savings (with interruption risk)
-   - Download results and terminate pod
-   - Spin up cheaper GPU for generation-only tasks
-
-## File Descriptions
-
-### Core Scripts
-
-- **finetune_flux_train.py** - Training script; generates YAML config and runs ai-toolkit
-- **flux_infer.py** - Inference script; loads model/LoRA and generates images
-- **label_images.py** - BLIP-based auto-captioning tool
-- **config.py** - Configuration manager with typed accessors
-- **setup_runpod.py** - Python-based RunPod environment setup
-- **runpod_setup.sh** - Bash-based RunPod environment setup
-- **quick_start.sh** - Complete workflow automation script
-
-### Deprecated Scripts
-
-- **generate_images.py** - (DEPRECATED) Thin shim that forwards to flux_infer.py
-- **finetune_flux.py** - (DEPRECATED) Forwards to finetune_flux_train.py
-
-### Configuration Files
-
-- **config.json** - Project configuration (paths, settings, trigger word)
-- **ENV** - Environment variables (HF_TOKEN)
-- **flux_training_config.yaml** - Generated training configuration for ai-toolkit
-- **prompts.txt** - Text prompts for image generation (one per line)
-- **prompts.txt.example** - Example prompts template
-
-### Data Directories
-
-- **photos/** - Training images directory (1024×1024 JPEG + `.txt` captions)
-- **output/flux_lora/** - Trained LoRA checkpoints and sample images
-  - `flux_training_config.yaml` - Training configuration
-  - `*.safetensors` - LoRA weight checkpoints
-  - `samples/` - Sample images generated during training
-- **output/generated_images/** - Final generated images from inference
-
-## Image Labeling Tool
-
-This repository includes an automated image labeling tool that uses the BLIP (Bootstrapping Language-Image Pre-training) model to generate descriptive captions for your images.
-
-The tool automatically reads settings from `config.json` for the image directory and trigger word.
-
-### Usage
-
-```bash
-python label_images.py
-
-# Overwrite existing captions
-python label_images.py --overwrite
-```
-
-### Options
-
-- `--max-tokens`: Maximum tokens per caption (default: 30)
-- `--overwrite`: Overwrite existing caption files
-
-### How It Works
-
-The tool:
-
-1. Loads the BLIP image captioning model (requires ~2GB GPU memory)
-2. Processes each image in the specified directory
-3. Generates a descriptive caption
-4. Optionally appends a token/trigger word
-5. Saves captions as `.txt` files with the same name as the images
-
-**Example Output:**
-
-- Image: `photo_001.jpg`
-- Caption file: `photo_001.txt`
-- Content: `"a young [trigger] standing in a park"`
